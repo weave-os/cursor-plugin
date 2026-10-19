@@ -5,62 +5,66 @@ alwaysApply: true
 
 # Weave Engineering Analytics
 
-You have access to the Weave MCP server, which provides real-time engineering metrics and analytics. Use these tools to answer questions about team productivity, code velocity, review quality, and AI code adoption.
+You have access to the Weave MCP server, which provides engineering metrics and analytics from the user's Weave workspace. Use these tools to answer questions about team productivity, code output, review quality, task delivery, AI coding tool adoption and agent activity.
 
-## Available tools
+## Core tools
+
+### resolve_entities
+Find teams, accounts, repositories or tags by name, or look up names for IDs. Call this first whenever the user names a team, person or repository.
 
 ### get_metric_overview
-Aggregated metrics with trends, time series, and benchmarks. Use for high-level questions like "How is our team doing?" or "What's our PR cycle time trend?"
+Aggregated metrics with trends, time series, groupings and benchmarks. Use for high-level questions like "How is our team doing?" or "What's our PR cycle time trend?"
 
 ### get_metric_drill_down
-Detailed records behind a metric. Use when investigating specific data points, finding outliers, or examining individual PRs/tasks/reviews.
+Detailed records behind a metric. Use when investigating specific data points, finding outliers, or examining individual PRs, tasks or reviews.
 
-### get_accounts
-List team members with their names and IDs. Call this first when you need to filter metrics by specific people.
-
-### get_teams
-List teams with their names and IDs. Call this first when you need to filter metrics by team.
+### Other tools
+- `research_overview` for a broad metrics snapshot
+- `search_prs` and `get_pr_details` for specific pull requests
+- `get_anomalies_and_trends` for unusual changes
+- `search_documentation` and `get_documentation` for metric definitions and product help
 
 ## Metric types
 
 Key metrics available (use exact values for `metric_type`):
 
 **Code velocity:**
-- `code_output` — Weighted code output score
-- `code_loc` — Lines of code changed
-- `prs` — Pull requests merged
-- `pr_cycle_time` — Time from PR open to merge
-- `pr_merge_time` — Time from approval to merge
+- `code_output` — Expert-engineer effort behind merged PRs
+- `code_loc` — Lines of code added by PRs (move-aware)
+- `prs` — Merged PRs
+- `pr_cycle_time` — Median time from first commit to merge
+- `pr_merge_time` — Median time from PR opened to merge
 
 **Code review:**
-- `code_reviews` — Number of code reviews
-- `code_review_turnaround` — Time to first review
-- `code_review_quality` — Review quality score
-- `review_cycles` — Rounds of review before merge
-- `pr_review_rate` — Percentage of PRs reviewed
+- `code_reviews` — PRs reviewed
+- `code_review_turnaround` — Median turnaround time for reviews given
+- `code_review_quality` — Quality of code reviews
+- `review_cycles` — Average review rounds per PR before merge
+- `pr_review_rate` — Share of PRs reviewed before merge
 
 **Task delivery:**
-- `tasks` — Tasks completed
-- `points` — Story points delivered
-- `task_lead_time` — Time from task creation to completion
-- `task_delivery` — Task delivery rate
+- `tasks` — Story points of completed tasks
+- `points` — Points completed
+- `task_lead_time` — Median time from in progress to completion
+- `task_delivery` — Median time from due date to delivery (negative means early)
 
-**AI code:**
-- `ai_code_loc` — AI-assisted lines of code
-- `ai_code_percentage` — Percentage of code written with AI
-- `ai_output_percentage` — AI contribution to code output
+**AI coding tools and agents:**
+- `ai_adoption_rate` — Share of members with any AI tool activity
+- `ai_code_percentage` — % of code written by AI tools
+- `ai_output_percentage` — AI share of code output
 - `ai_efficiency_index` — Composite AI efficiency score (volume, usage, cost, churn)
+- `agent_prs` — Agent-led pull requests, including open ones
 
 **Quality:**
-- `bugs_introduced` — Bugs introduced
-- `bug_ratio` — Bug-to-feature ratio
-- `revert_prs` — Reverted pull requests
-- `code_turnover` — Code churn rate
+- `bugs_introduced` — Bugs introduced, from Weave's bug finder analysis
+- `bug_ratio` — Share of code output from bug-fix PRs
+- `revert_prs` — Revert PRs
+- `code_turnover` — % of code overwritten within 3 months
 
 ## Best practices
 
-1. **Always specify date ranges.** Use `start_time` and `end_time` in `yyyy-mm-dd` format.
-2. **Look up IDs first.** Before filtering by team or person, call `get_accounts` or `get_teams` to get the correct IDs.
+1. **Always set a time range.** Prefer `date_range_preset` (for example `last_month`); otherwise pass `start_time` and `end_time`. Presets are trailing windows ending today; use `start_time` and `end_time` for calendar months or quarters.
+2. **Look up IDs first.** Before filtering by team, person or repository, call `resolve_entities` to get the correct IDs.
 3. **Start with overview, then drill down.** Use `get_metric_overview` for trends, then `get_metric_drill_down` to investigate specifics.
-4. **Use group_by for comparisons.** In `get_metric_overview`, use `group_by` to compare across teams, people, or repositories.
+4. **Use group_by for comparisons.** In `get_metric_overview`, use `group_by` to compare across teams, people, repositories or AI coding tools. Not every metric supports every grouping; if one isn't supported, the error lists the allowed values.
 5. **Present data clearly.** Round numbers, use tables, and compare against benchmarks when available.

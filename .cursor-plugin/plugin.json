@@ -1,13 +1,13 @@
 {
   "name": "weave",
-  "version": "1.0.0",
-  "description": "Engineering analytics MCP server by Weave. Get real-time metrics on code output, PR cycle time, review turnaround, task delivery, AI code adoption, and 40+ other engineering metrics — all from your editor.",
+  "version": "1.1.0",
+  "description": "Engineering analytics from Weave inside your editor. Ask about code output, PR cycle time, review turnaround, task delivery, AI coding adoption and agent activity, backed by your team's real data.",
   "author": {
     "name": "Weave",
     "email": "support@workweave.ai"
   },
-  "homepage": "https://www.workweave.ai",
-  "repository": "https://github.com/workweave/cursor-plugin",
+  "homepage": "https://weaveos.com",
+  "repository": "https://github.com/weave-os/cursor-plugin",
   "license": "MIT",
   "keywords": [
     "engineering-metrics",
@@ -21,7 +21,10 @@
     "engineering-management",
     "team-analytics",
     "mcp",
-    "weave"
+    "weave",
+    "ai-adoption",
+    "claude-code",
+    "cursor"
   ],
   "logo": "assets/logo.svg"
 }

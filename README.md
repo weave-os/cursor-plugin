@@ -1,125 +1,159 @@
-# Weave — Engineering Analytics for Cursor
+# Weave — engineering analytics for Cursor and Claude Code
 
-Query your engineering metrics directly from Cursor. Get instant answers about code velocity, PR cycle time, review quality, AI code adoption, and 40+ other metrics without leaving your editor.
+Ask about your engineering team's real metrics without leaving your editor: code output, PR cycle time, review turnaround, task delivery, AI coding tool adoption, agent activity and more. Answers come from your own [Weave](https://weaveos.com) workspace.
 
-**[Get your API key →](https://app.workweave.ai/organization/settings)**
+This plugin queries your Weave data.
 
 ## What you get
 
 ### MCP server
-Four tools connected to your Weave workspace:
+The plugin connects your editor to Weave's remote MCP server at `https://app.workweave.ai/public/mcp`. You sign in with OAuth the first time you use it, so there is no API key to paste. Core tools:
 
 | Tool | Description |
 |---|---|
-| `get_metric_overview` | Aggregated metrics with trends, time series, and benchmarks |
-| `get_metric_drill_down` | Detailed records behind any metric — individual PRs, tasks, reviews |
-| `get_accounts` | Team member names and IDs for filtering |
-| `get_teams` | Team names and IDs for filtering |
+| `resolve_entities` | Find teams, people, repositories or tags by name, or look up names for IDs |
+| `get_metric_overview` | Aggregated metrics with trends, time series, groupings and benchmarks |
+| `get_metric_drill_down` | The records behind a metric: individual PRs, tasks and reviews |
+| `research_overview` | A broad snapshot of how the organization is doing |
+| `search_prs` / `get_pr_details` | Find a pull request and read its metadata |
+| `get_anomalies_and_trends` | Unusual changes worth a look |
+| `search_documentation` / `get_documentation` | Metric definitions and product help |
 
-### Rules
-Pre-configured guidance that teaches the AI how to use Weave tools effectively — correct metric names, date formats, and best practices.
+### Skill: engineering analytics
+A workflow for answering analytics questions: resolve the teams or people involved, fetch the right metric, then present the result with trends and benchmarks.
 
-### Skill: Engineering Analytics
-A structured workflow for answering complex analytics questions: resolving entities, fetching the right metrics, and presenting actionable insights.
+### Agent: engineering analyst
+An agent that thinks like an engineering leader. It leads with the finding, puts trends in context and suggests next steps.
 
-### Agent: Engineering Analyst
-A purpose-built agent persona that thinks like an engineering leader — it leads with insights, contextualizes trends, and suggests next steps.
+### Cursor rule
+Always-on guidance for Cursor with correct metric names, time ranges and tool order.
 
 ## Setup
 
-1. **Install the plugin** from the [Cursor Marketplace](https://cursor.com/marketplace)
-2. **Add your API key** in Cursor Settings:
-   - Open Cursor Settings (`Cmd+Shift+J`)
-   - Go to **Tools & MCP**
-   - Find the **weave** server and click the edit (pencil) icon
-   - Replace `YOUR_WEAVE_API_KEY` with your actual key (e.g., `wkey_abc123...`)
-   - Restart Cursor for the change to take effect
-3. **Start asking questions** in Cursor chat:
-   - "What's our PR cycle time this month?"
-   - "Compare code output across teams for Q1"
-   - "How much AI-written code are we shipping?"
-   - "Who has the longest review turnaround?"
+### Cursor
+1. Add the Weave server to `.cursor/mcp.json` (skip this step if you installed the Weave plugin from the [Cursor Marketplace](https://cursor.com/marketplace)):
+   ```json
+   {
+     "mcpServers": {
+       "weave": {
+         "type": "http",
+         "url": "https://app.workweave.ai/public/mcp"
+       }
+     }
+   }
+   ```
+   This adds only the MCP server. To get the rule too, copy `rules/weave-analytics.mdc` into `.cursor/rules/`.
+2. On first use, Cursor opens a browser window. Sign in to Weave and approve access.
+
+### Claude Code
+1. Add this repository as a plugin marketplace and install the plugin:
+   ```
+   /plugin marketplace add weave-os/cursor-plugin
+   /plugin install weave@weave
+   ```
+2. Run `/mcp`, choose **plugin:weave:weave** and sign in to Weave in the browser window that opens.
 
 ## Example prompts
 
 | Question | What happens |
 |---|---|
-| "How is the team doing?" | Fetches code output, PRs, and cycle time for the last 30 days with trend comparison |
-| "Show me AI code adoption over time" | Returns weekly `ai_code_percentage` time series |
-| "Which repos have the slowest cycle time?" | Drills down into `pr_cycle_time` grouped by repository |
-| "Compare our review quality to benchmarks" | Fetches `code_review_quality` with organization benchmarks |
+| "How is the team doing?" | Code output, PRs and cycle time over the last month, with the trend |
+| "Show me AI code adoption over time" | Weekly `ai_code_percentage` time series |
+| "Which AI coding tool drives the most output?" | `ai_code_output` grouped by tool (Claude Code, Cursor, Codex, Copilot and others) |
+| "Which teams have the slowest cycle time?" | `pr_cycle_time` grouped by team |
+| "What were the biggest PRs merged in the last month?" | PR drill-down sorted by code output |
 
-## Available metrics
+## Metrics
 
 <details>
 <summary><strong>Code velocity</strong></summary>
 
-- `code_output` — Weighted productivity score
-- `code_output_per_engineer` — Per-person output
-- `code_loc` — Lines of code changed
-- `prs` — Pull requests merged
-- `prs_per_engineer` — PRs per person
-- `pr_cycle_time` — Open to merge duration
-- `pr_merge_time` — Approval to merge duration
-- `pr_deploy_lead_time` — Merge to deploy duration
+- `code_output` — Expert-engineer effort behind merged PRs, estimated by Weave's models
+- `code_output_per_engineer` — Code output per engineer
+- `code_loc` — Lines of code added by PRs (move-aware)
+- `prs` — Merged PRs
+- `prs_per_engineer` — Merged PRs per engineer
+- `pr_cycle_time` — Median time from first commit to merge
+- `pr_merge_time` — Median time from PR opened to merge
+- `pr_approval_to_merge_time` — Time from approval to merge
+- `pr_deploy_lead_time` — Median time from merge to first production deploy
 
 </details>
 
 <details>
 <summary><strong>Code review</strong></summary>
 
-- `code_reviews` — Reviews performed
-- `code_review_turnaround` — Time to first review
-- `code_review_quality` — Review thoroughness score
-- `review_cycles` — Review rounds before merge
-- `pr_review_rate` — % of PRs reviewed
-- `comment_resolution` — Comment resolution details
-- `comment_resolution_rate` — Resolution rate
+- `code_reviews` — PRs reviewed
+- `code_review_turnaround` — Median turnaround time for reviews given
+- `code_review_quality` — Quality of code reviews
+- `review_cycles` — Average review rounds per PR before merge
+- `pr_review_rate` — Share of PRs reviewed before merge
+- `comment_resolution_rate` — Share of review comments resolved by code changes
 
 </details>
 
 <details>
 <summary><strong>Task delivery</strong></summary>
 
-- `tasks` — Tasks completed
-- `task_count` — Total task count
-- `points` — Story points delivered
-- `points_per_engineer` — Points per person
-- `task_lead_time` — Creation to completion
-- `task_delivery` — Delivery rate
-- `bug_tasks` — Bug tasks
+- `tasks` — Story points of completed tasks (Linear, Jira)
+- `task_count` — All tasks, any status
+- `points` — Points completed
+- `points_per_engineer` — Points completed per engineer
+- `task_lead_time` — Median time from in progress to completion
+- `task_delivery` — Median time from due date to delivery (negative means early)
+- `bug_tasks` — Tasks suspected to be bugs
 
 </details>
 
 <details>
-<summary><strong>AI code</strong></summary>
+<summary><strong>AI coding tools and agents</strong></summary>
 
-- `ai_code_loc` — AI-assisted lines of code
-- `ai_code_percentage` — % of code written with AI
+- `ai_adoption_rate` — Share of members with any AI tool activity
+- `ai_active_developers` — Engineers with AI-attributed code output
+- `ai_code_loc` — Lines added and deleted by AI tools
+- `ai_code_percentage` — % of code written by AI tools
 - `ai_output_percentage` — AI share of code output
+- `ai_code_output` — Code output from AI tools
 - `ai_efficiency_index` — Composite score (volume, usage, cost, churn)
-- `output_per_ai_dollar` — Output per AI dollar
-- `tool_costs` — AI tool costs
+- `output_per_ai_dollar` — AI code output per dollar of AI tool spend
+- `tool_costs` — Spend on AI tools and API usage
+- `agent_prs` — Agent-led pull requests, including open ones
+- `agent_pr_autonomy` — 1–5 autonomy score for agent PRs (higher needs less human help)
 
 </details>
 
 <details>
-<summary><strong>Quality</strong></summary>
+<summary><strong>Delivery and quality</strong></summary>
 
-- `bugs_introduced` — Bugs introduced
-- `bug_ratio` — Bug-to-feature ratio
-- `revert_prs` — Reverted PRs
-- `code_turnover` — Code churn
-- `innovation_ratio` — Feature vs maintenance ratio
+- `ci_deploy_frequency` — Production deploys per period
+- `ci_deploy_success_rate` — % of production deploys that succeed
+- `ci_deploy_mttr` — Mean time from a failed deploy to the next successful one
+- `bugs_introduced` — Bugs introduced, from Weave's bug finder analysis
+- `bug_ratio` — Share of code output from bug-fix PRs
+- `revert_prs` — Revert PRs
+- `code_turnover` — % of code overwritten within 3 months
+- `innovation_ratio` — Share of code output from feature PRs
 
 </details>
+
+## What the plugin runs, sends and accesses
+
+- The plugin contains no executable code. It ships a skill, an agent, a Cursor rule and one MCP server entry.
+- The MCP server entry points your editor at `https://app.workweave.ai/public/mcp`. Requests go to Weave over HTTPS with an OAuth token issued to you when you sign in.
+- The tools read data from your Weave workspace. They don't change anything there.
+- You only see data your Weave role allows. Team members can only access data for teams they belong to.
+- Weave's [privacy policy](https://weaveos.com/privacy) and [security overview](https://weaveos.com/security) cover how Weave stores and handles your data.
 
 ## Requirements
 
-- A [Weave](https://www.workweave.ai) account with connected data sources (GitHub, GitLab, Linear, Jira, etc.)
-- An API key from your [Weave settings](https://app.workweave.ai/organization/settings)
+- A [Weave](https://weaveos.com) account with connected data sources (GitHub, GitLab, Bitbucket, Linear, Jira and others)
 
 ## Links
 
-- [Weave website](https://www.workweave.ai)
+- [Weave website](https://weaveos.com)
 - [Get started](https://app.workweave.ai)
+- Support: support@workweave.ai
+
+## License
+
+MIT
