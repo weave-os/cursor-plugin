@@ -116,10 +116,10 @@ A purpose-built agent persona that thinks like an engineering leader — it lead
 
 ## Requirements
 
-- A [Weave](https://www.workweave.ai) account with connected data sources (GitHub, GitLab, Linear, Jira, etc.)
+- A [Weave](https://weaveos.com) account with connected data sources (GitHub, GitLab, Linear, Jira, etc.)
 - An API key from your [Weave settings](https://app.workweave.ai/organization/settings)
 
 ## Links
 
-- [Weave website](https://www.workweave.ai)
+- [Weave website](https://weaveos.com)
 - [Get started](https://app.workweave.ai)
