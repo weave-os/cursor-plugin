@@ -4,12 +4,12 @@
     "name": "Weave",
     "email": "support@workweave.ai"
   },
-  "description": "Weave's plugin for engineering analytics in Claude Code: metrics, PRs, AI coding tool adoption and agent activity from your Weave workspace.",
+  "description": "Use the shared engineering analytics skill and Weave MCP tools in Claude Code.",
   "plugins": [
     {
       "name": "weave",
       "source": "./",
-      "description": "Engineering analytics from Weave inside your editor. Ask about code output, PR cycle time, review turnaround, task delivery, AI coding adoption and agent activity, backed by your team's real data."
+      "description": "Analyze code output, PR cycle time, review turnaround, task delivery, and AI tool adoption from your Weave workspace."
     }
   ]
 }

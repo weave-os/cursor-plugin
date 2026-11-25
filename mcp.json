@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "weave": {
+      "type": "streamable-http",
+      "url": "https://app.workweave.ai/public/mcp"
+    }
+  }
+}

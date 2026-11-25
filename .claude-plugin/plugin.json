@@ -2,6 +2,7 @@
   "name": "weave",
   "version": "1.1.0",
   "description": "Engineering analytics from Weave inside your editor. Ask about code output, PR cycle time, review turnaround, task delivery, AI coding adoption and agent activity, backed by your team's real data.",
+  "privacyPolicyUrl": "https://weaveos.com/privacy",
   "author": {
     "name": "Weave",
     "email": "support@workweave.ai",

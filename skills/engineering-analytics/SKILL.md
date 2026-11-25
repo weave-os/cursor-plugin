@@ -1,154 +1,31 @@
 ---
 name: engineering-analytics
 description: >-
-  Analyze engineering team metrics using Weave. Use when asked about
-  team productivity, code output, PR cycle time, review turnaround,
-  task delivery, AI coding tool adoption, agent activity, DORA metrics,
-  or any engineering performance question.
+  Analyze engineering metrics from a connected Weave workspace. Use for questions
+  about team code output, pull requests, review turnaround, task delivery, or
+  AI tool adoption and code attribution that need actual workspace data.
 ---
 
-# Engineering Analytics
+# Engineering analytics
 
-Analyze engineering team performance using Weave's MCP tools. This skill handles questions about code output, PR cycle time, review quality, task delivery, AI coding tool adoption, agent activity, and more.
+Use the connected Weave MCP server for read-only analysis. For general engineering advice, leave workspace data untouched.
 
-## When to use
+## Set the scope and dates
 
-- "How is my team performing?"
-- "What's our PR cycle time?"
-- "Who are the top contributors in the last 3 months?"
-- "How much AI-written code are we shipping?"
-- "Is Claude Code or Cursor driving more output for us?"
-- "Show me review turnaround trends"
-- "Compare team velocity month over month"
-- Any question about engineering metrics, productivity, or code analytics
+- Check the client’s Weave connection and available tools. If Weave requires sign-in, ask the user to authorize or reconnect through the client’s OAuth flow for the intended organization. If the connector or a needed tool is unavailable, explain which data you cannot verify.
+- Resolve named teams, people, repositories and tags with `resolve_entities`. Use the returned IDs in the corresponding filters, such as `team_ids`, `account_ids` or `repository_ids`. If “my team” is unclear or a name matches multiple plausible teams, ask the user to choose before querying metrics. A directory match establishes identity only.
+- Stay within the requested scope and the signed-in user's Weave permissions. Prefer team aggregates for team questions and use individual metrics only when requested and permitted. Preserve anonymization and redactions. If access is denied, report the limitation and keep the requested scope in any follow-up queries.
+- Use `start_time` and `end_time` with inclusive dates for calendar periods and an IANA `timezone` when the user specifies one. If no period is given, use the trailing `last_month` preset and label it as such. It runs from the same date a month ago through today. Use matching windows and granularity when comparing trends.
 
-## Workflow
+## Choose a workflow
 
-### Step 1: Understand the question
+- **Team or delivery snapshot.** Use `get_metric_overview` for aggregates and trends. For a team health question, start with a few relevant measures such as `code_output` (estimated engineering effort behind merged PRs), `prs` (merged PRs) and `pr_cycle_time` (median first commit to merge). For review turnaround, use `code_review_turnaround` and account for the organization’s tracking mode when interpreting the result. For task lead time, use `task_lead_time` (median in progress to completed).
+- **Cycle time comparison or investigation.** Compare teams with `get_metric_overview`, `metric_type=pr_cycle_time` and `group_by=team` under the same filters and dates. For “Which PRs took the longest?”, use `get_metric_drill_down` in that scope with `metric_type=pr_cycle_time`, `sort_by="Cycle time"` and `sort_direction=desc`. Use the returned PR links and distinguish rows shown from `total_count` when results are limited.
+- **AI tool adoption or code attribution.** For “What share of members used AI tools?”, use `ai_adoption_rate`, the share of eligible active members with recorded AI tool activity. Use `time_granularity=week` for a weekly trend and `group_by=ai_code_assistant` for per-tool adoption. Members can use more than one tool, so keep those shares separate. For “How many lines did assistants generate?”, use `ai_code_loc` for recorded assistant-generated LOC. For “What share of merged PR lines was attributed to AI?”, use `ai_code_percentage`, the AI share of AI-plus-human PR LOC with codegen excluded. Ask which measure the user means if “AI adoption” is used ambiguously.
+- **Specific PR or metric definition.** When listed by the client, use `get_pr_details` for metadata about a known PR URL. Use `search_prs` for title or description searches only if available. For metric definitions, use `search_documentation` if available, or `get_documentation` when the tool is available and you have a Weave docs path or URL.
 
-Identify what the user is asking about:
-- **What metric?** Map to a specific `metric_type` (see list below)
-- **What scope?** Org-wide, team, repository, or individual
-- **What time range?** Default to `date_range_preset=last_month` if not specified
+## Report what the data supports
 
-### Step 2: Resolve entities
-
-If the question mentions specific teams, people, repositories, or tags, call `resolve_entities` first and use the returned IDs in later calls:
-- Find a team: `resolve_entities(entity_type="team", query="Platform")`
-- Find a person: `resolve_entities(entity_type="account", query="Jane")`
-- Find a repository: `resolve_entities(entity_type="repository", query="backend")`
-- List all teams: `resolve_entities(entity_type="team")`
-
-Never guess IDs.
-
-### Step 3: Fetch metrics
-
-Choose the right tool based on the question:
-
-- **Trends, aggregates, comparisons** → `get_metric_overview`
-  - Use `date_range_preset` (`this_week`, `last_month`, `last_2_months`, `last_3_months`, `last_6_months`, `last_year`). Presets are trailing windows that end today, so for a calendar month or quarter pass `start_time` and `end_time` instead
-  - Use `group_by` for breakdowns (`team`, `account`, `repository`, `pr_type`, `ai_code_assistant`, ...)
-  - Use `time_granularity` for time series (`day`, `week`, `two_week`, `month`, `quarter`, `year`)
-  - Use `ai_code_assistants` to filter to one tool (for example `claude_code`, `cursor_ide`, `codex`, `copilot`)
-
-- **Specific records, outliers, investigation** → `get_metric_drill_down`
-  - Use `sort_by` and `sort_direction` to find extremes
-  - `total_count` is always the full match count; raise `limit` (max 300) only when you need the rows themselves
-
-- **Broad health check** → `research_overview`
-- **A specific pull request** → `search_prs`, then `get_pr_details`
-- **Unusual changes** → `get_anomalies_and_trends`
-- **How a metric is defined** → `search_documentation`, then `get_documentation`
-
-Not every metric supports every `group_by` or `sort_by` value. If one isn't supported, the error lists the allowed values. Retry with one of them.
-
-### Step 4: Present results
-
-- Use tables for comparisons
-- Round durations to human-readable values (e.g., "2.3 days" not "198432 seconds")
-- Highlight trends (up/down from previous period)
-- Include benchmark comparisons when available
-- Call out notable outliers or patterns
-
-## Metric reference
-
-### Code velocity
-| Metric type | What it measures |
-|---|---|
-| `code_output` | Expert-engineer effort behind merged PRs, estimated by Weave's models |
-| `code_output_per_engineer` | Code output per engineer |
-| `code_loc` | Lines of code added by PRs (move-aware) |
-| `prs` | Merged PRs |
-| `prs_per_engineer` | Merged PRs per engineer |
-| `pr_cycle_time` | Median time from first commit to merge |
-| `pr_merge_time` | Median time from PR opened to merge |
-| `pr_approval_to_merge_time` | Time from approval to merge |
-| `pr_deploy_lead_time` | Median time from merge to first production deploy |
-
-### Code review
-| Metric type | What it measures |
-|---|---|
-| `code_reviews` | PRs reviewed |
-| `code_review_turnaround` | Median turnaround time for reviews given |
-| `code_review_quality` | Quality of code reviews |
-| `review_cycles` | Average review rounds per PR before merge |
-| `pr_review_rate` | Share of PRs reviewed before merge |
-| `comment_resolution_rate` | Share of review comments resolved by code changes |
-
-### Task delivery
-| Metric type | What it measures |
-|---|---|
-| `tasks` | Story points of completed tasks (Linear, Jira) |
-| `task_count` | All tasks, any status |
-| `points` | Points completed |
-| `points_per_engineer` | Points completed per engineer |
-| `task_lead_time` | Median time from in progress to completion |
-| `task_delivery` | Median time from due date to delivery (negative means early) |
-| `bug_tasks` | Tasks suspected to be bugs |
-
-### AI coding tools and agents
-| Metric type | What it measures |
-|---|---|
-| `ai_adoption_rate` | Share of members with any AI tool activity in the period |
-| `ai_active_developers` | Engineers with AI-attributed code output |
-| `ai_code_loc` | Lines added and deleted by AI tools |
-| `ai_code_percentage` | % of code written by AI tools |
-| `ai_output_percentage` | AI share of code output |
-| `ai_code_output` | Code output from AI tools |
-| `ai_efficiency_index` | Composite score combining AI output volume, usage %, cost, and code turnover |
-| `output_per_ai_dollar` | AI code output per dollar of AI tool spend |
-| `tool_costs` | Spend on AI tools and API usage |
-| `agent_prs` | Agent-led pull requests, including open ones |
-| `agent_pr_autonomy` | 1–5 score for how little human intervention agent PRs needed (higher is more autonomous) |
-
-### Delivery and quality
-| Metric type | What it measures |
-|---|---|
-| `ci_deploy_frequency` | Production deploys per period |
-| `ci_deploy_success_rate` | % of production deploys that succeed |
-| `ci_deploy_mttr` | Mean time from a failed deploy to the next successful one |
-| `bugs_introduced` | Bugs introduced, from Weave's bug finder analysis |
-| `bug_ratio` | Share of code output from bug-fix PRs |
-| `revert_prs` | Revert PRs |
-| `code_turnover` | % of code overwritten within 3 months |
-| `innovation_ratio` | Share of code output from feature PRs |
-
-## Example queries
-
-**"How's the team doing over the last month?"**
-→ `get_metric_overview` with `metric_type=code_output`, `date_range_preset=last_month`, `group_by=team`
-
-**"Who shipped the most PRs in the last 3 months?"**
-→ `get_metric_overview` with `metric_type=prs`, `date_range_preset=last_3_months`, `group_by=account`
-
-**"What were the biggest PRs merged in the last month?"**
-→ `get_metric_drill_down` with `metric_type=prs`, `date_range_preset=last_month`, `sort_by="Code output"`, `sort_direction=desc`, `limit=10`
-
-**"What's our AI code adoption trend?"**
-→ `get_metric_overview` with `metric_type=ai_code_percentage`, `date_range_preset=last_3_months`, `time_granularity=week`
-
-**"Which AI coding tool drives the most output?"**
-→ `get_metric_overview` with `metric_type=ai_code_output`, `date_range_preset=last_month`, `group_by=ai_code_assistant`
-
-**"Compare review turnaround across teams"**
-→ `resolve_entities(entity_type="team")` first, then `get_metric_overview` with `metric_type=code_review_turnaround`, `group_by=team`
+- If a metric, grouping, sort or filter is unsupported, use the available schema and error details to find an equivalent query that preserves the requested scope. Explain any gap if the requested breakdown remains unavailable.
+- Report empty or partial results as such. Treat zero as a result only when the tool returns a zero count or value. Include known integration, coverage or permission limits and state which results they affect.
+- Lead with the measured result, then give the metric, scope, dates and relevant units. Cite returned record or documentation links when available. For aggregate results without a link, identify the Weave metric and applied filters. Treat trends and outliers as observations and require evidence for explanations of cause.

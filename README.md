@@ -1,159 +1,70 @@
-# Weave — engineering analytics for Cursor and Claude Code
+# Weave Analytics
 
-Ask about your engineering team's real metrics without leaving your editor: code output, PR cycle time, review turnaround, task delivery, AI coding tool adoption, agent activity and more. Answers come from your own [Weave](https://weaveos.com) workspace.
+Ask your engineering questions in Cursor or Claude Code and get answers from the Weave workspace your account can access. The plugin packages one shared `engineering-analytics` skill, an engineering analyst agent, and Weave's remote MCP connection.
 
-This plugin queries your Weave data.
+The skill helps scope a question, select metrics and date ranges, and report the result with its limits. It covers code output, PR cycle time, review turnaround, task delivery, AI tool adoption, and related engineering analytics. Ask a question normally to use the skill when relevant. You can invoke it directly with `/engineering-analytics` in Cursor or `/weave:engineering-analytics` in Claude Code.
 
-## What you get
+## Availability
 
-### MCP server
-The plugin connects your editor to Weave's remote MCP server at `https://app.workweave.ai/public/mcp`. You sign in with OAuth the first time you use it, so there is no API key to paste. Core tools:
+The Cursor Marketplace and OpenAI plugin directory listings for version 1.1.0 are pending review and publication. Once the OpenAI listing is public, find **Weave Analytics** in the available plugin directory, install or enable it in your client, and complete Weave OAuth when prompted.
 
-| Tool | Description |
-|---|---|
-| `resolve_entities` | Find teams, people, repositories or tags by name, or look up names for IDs |
-| `get_metric_overview` | Aggregated metrics with trends, time series, groupings and benchmarks |
-| `get_metric_drill_down` | The records behind a metric: individual PRs, tasks and reviews |
-| `research_overview` | A broad snapshot of how the organization is doing |
-| `search_prs` / `get_pr_details` | Find a pull request and read its metadata |
-| `get_anomalies_and_trends` | Unusual changes worth a look |
-| `search_documentation` / `get_documentation` | Metric definitions and product help |
+## Install in Cursor
 
-### Skill: engineering analytics
-A workflow for answering analytics questions: resolve the teams or people involved, fetch the right metric, then present the result with trends and benchmarks.
+### Local test
 
-### Agent: engineering analyst
-An agent that thinks like an engineering leader. It leads with the finding, puts trends in context and suggests next steps.
+Cursor supports both its native plugin format and the portable Agent Plugins format. This repository includes both manifests. The native manifest is `.cursor-plugin/plugin.json`. The portable manifest is `plugin.json` at the repository root. Both discover the repository-root `mcp.json`, which defines the `weave` MCP server. Cursor's root MCP file is `mcp.json`. The `.mcp.json` file is for Claude Code.
 
-### Cursor rule
-Always-on guidance for Cursor with correct metric names, time ranges and tool order.
+To test locally, open an empty scratch workspace, then use **Customize → Plugins → Import from Disk** to select the repository directory. You can also copy the repository into `~/.cursor/plugins/local/weave`, then restart Cursor or run **Developer: Reload Window**. Open **Customize** and verify the skill and Weave MCP server are listed. When Cursor loads the native manifest, also verify the analyst agent. Enterprise users may need their administrator to enable local plugin imports.
 
-## Setup
+If the MCP server is missing, check that the repository-root `mcp.json` is present and valid JSON, then reload Cursor. If `weave` appears twice, Cursor may be loading a prior standalone entry alongside the plugin. After verifying the new connection, disable or remove the older standalone entry at the scope where you added it.
 
-### Cursor
-1. Add the Weave server to `.cursor/mcp.json` (skip this step if you installed the Weave plugin from the [Cursor Marketplace](https://cursor.com/marketplace)):
-   ```json
-   {
-     "mcpServers": {
-       "weave": {
-         "type": "http",
-         "url": "https://app.workweave.ai/public/mcp"
-       }
-     }
-   }
-   ```
-   This adds only the MCP server. To get the rule too, copy `rules/weave-analytics.mdc` into `.cursor/rules/`.
-2. On first use, Cursor opens a browser window. Sign in to Weave and approve access.
+On first use, follow the browser sign-in and authorize Weave with the account and workspace you intend to query. If sign-in did not finish, open **Customize → MCP**, select Weave, and reconnect through OAuth. Confirm that your account can access the intended Weave workspace.
 
-### Claude Code
-1. Add this repository as a plugin marketplace and install the plugin:
-   ```
-   /plugin marketplace add weave-os/cursor-plugin
-   /plugin install weave@weave
-   ```
-2. Run `/mcp`, choose **plugin:weave:weave** and sign in to Weave in the browser window that opens.
+### Upgrade from version 1.0.0
 
-## Example prompts
+If you previously configured Weave with an API key, retain that configuration while installing version 1.1.0. Authorize the new plugin through OAuth and verify that its MCP connection can query your intended workspace. Then disable the older standalone Weave MCP entry at its original scope to avoid duplicate tools. To roll back, disable or uninstall the plugin in **Customize**, restore the prior standalone configuration, and reconnect it as needed.
 
-| Question | What happens |
-|---|---|
-| "How is the team doing?" | Code output, PRs and cycle time over the last month, with the trend |
-| "Show me AI code adoption over time" | Weekly `ai_code_percentage` time series |
-| "Which AI coding tool drives the most output?" | `ai_code_output` grouped by tool (Claude Code, Cursor, Codex, Copilot and others) |
-| "Which teams have the slowest cycle time?" | `pr_cycle_time` grouped by team |
-| "What were the biggest PRs merged in the last month?" | PR drill-down sorted by code output |
+### Marketplace install
 
-## Metrics
+After the Cursor Marketplace listing is public, search for **Weave Analytics** in Cursor's **Customize → Plugins** view and install it. Authenticate through the OAuth browser prompt on first use. The repository name `cursor-plugin` is retained for source compatibility.
 
-<details>
-<summary><strong>Code velocity</strong></summary>
+## Install in Claude Code
 
-- `code_output` — Expert-engineer effort behind merged PRs, estimated by Weave's models
-- `code_output_per_engineer` — Code output per engineer
-- `code_loc` — Lines of code added by PRs (move-aware)
-- `prs` — Merged PRs
-- `prs_per_engineer` — Merged PRs per engineer
-- `pr_cycle_time` — Median time from first commit to merge
-- `pr_merge_time` — Median time from PR opened to merge
-- `pr_approval_to_merge_time` — Time from approval to merge
-- `pr_deploy_lead_time` — Median time from merge to first production deploy
+After version 1.1.0 is merged into the public repository's default branch, add its marketplace and install the plugin:
 
-</details>
+```text
+/plugin marketplace add weave-os/cursor-plugin
+/plugin install weave@weave
+```
 
-<details>
-<summary><strong>Code review</strong></summary>
+The repository's Claude marketplace is named `weave`, and the plugin ID is `weave`. In Claude Code, run `/mcp` and verify that `plugin:weave:weave` is connected. Complete the browser OAuth flow for the intended Weave account and workspace. Ask an analytics question normally to use the shared skill, or run `/weave:engineering-analytics` directly. This GitHub-hosted marketplace has its own distribution path. Anthropic directory submission is covered in the [marketplace release guide](docs/marketplace-release.md).
 
-- `code_reviews` — PRs reviewed
-- `code_review_turnaround` — Median turnaround time for reviews given
-- `code_review_quality` — Quality of code reviews
-- `review_cycles` — Average review rounds per PR before merge
-- `pr_review_rate` — Share of PRs reviewed before merge
-- `comment_resolution_rate` — Share of review comments resolved by code changes
+If the MCP server is not connected, check `/mcp` for a connection error and reconnect through its OAuth flow. Confirm that the account can access the intended Weave workspace. If you already configured Weave as a standalone Claude MCP server, remove or disable that older entry at its original scope to avoid duplicate Weave connections. To roll back, uninstall the plugin with `/plugin`, restore the standalone server entry, then reconnect it through `/mcp`.
 
-</details>
+## Example questions
 
-<details>
-<summary><strong>Task delivery</strong></summary>
+- “How did Platform's code output and median PR cycle time change last month?”
+- “Compare median PR cycle time across Platform and Product for January.”
+- “Show weekly AI adoption for Platform over the last month.”
+- “Which merged PRs had the longest cycle time last month?”
+- “What does Weave mean by `ai_adoption_rate`?”
 
-- `tasks` — Story points of completed tasks (Linear, Jira)
-- `task_count` — All tasks, any status
-- `points` — Points completed
-- `points_per_engineer` — Points completed per engineer
-- `task_lead_time` — Median time from in progress to completion
-- `task_delivery` — Median time from due date to delivery (negative means early)
-- `bug_tasks` — Tasks suspected to be bugs
+The skill resolves named teams, people, repositories, and tags before using their identifiers in filters. If a name is ambiguous, it asks you to choose. If the tools do not support a requested metric or breakdown, it explains the gap. Trends show what changed in the returned data and do not establish a cause by themselves.
 
-</details>
+## OAuth and data
 
-<details>
-<summary><strong>AI coding tools and agents</strong></summary>
+The plugin connects to `https://app.workweave.ai/public/mcp` over HTTPS. When an MCP tool runs, the client sends the request and its query parameters to Weave's MCP service. Your OAuth authorization determines which workspace data the service can return. Weave processes requests under its [privacy policy](https://weaveos.com/privacy). Do not paste passwords, access tokens, or other secrets into prompts.
 
-- `ai_adoption_rate` — Share of members with any AI tool activity
-- `ai_active_developers` — Engineers with AI-attributed code output
-- `ai_code_loc` — Lines added and deleted by AI tools
-- `ai_code_percentage` — % of code written by AI tools
-- `ai_output_percentage` — AI share of code output
-- `ai_code_output` — Code output from AI tools
-- `ai_efficiency_index` — Composite score (volume, usage, cost, churn)
-- `output_per_ai_dollar` — AI code output per dollar of AI tool spend
-- `tool_costs` — Spend on AI tools and API usage
-- `agent_prs` — Agent-led pull requests, including open ones
-- `agent_pr_autonomy` — 1–5 autonomy score for agent PRs (higher needs less human help)
+OAuth handles authentication. A connected data source and Weave account access are required for the requested metrics. Results depend on connected integrations, available history, and your account permissions. For help, contact [support@workweave.ai](mailto:support@workweave.ai).
 
-</details>
+## Package contents
 
-<details>
-<summary><strong>Delivery and quality</strong></summary>
+- `mcp.json` defines the remote MCP server for Cursor and portable Agent Plugin clients.
+- `.mcp.json` defines the remote MCP server for Claude Code.
+- `skills/engineering-analytics/SKILL.md` contains the shared analytics workflow.
+- `agents/engineering-analyst.md` defines the analyst agent.
+- `.cursor-plugin/plugin.json` is the Cursor-native manifest.
+- `plugin.json` is the portable manifest and ChatGPT package metadata.
+- `.claude-plugin/` contains Claude Code plugin metadata and its GitHub marketplace manifest.
 
-- `ci_deploy_frequency` — Production deploys per period
-- `ci_deploy_success_rate` — % of production deploys that succeed
-- `ci_deploy_mttr` — Mean time from a failed deploy to the next successful one
-- `bugs_introduced` — Bugs introduced, from Weave's bug finder analysis
-- `bug_ratio` — Share of code output from bug-fix PRs
-- `revert_prs` — Revert PRs
-- `code_turnover` — % of code overwritten within 3 months
-- `innovation_ratio` — Share of code output from feature PRs
-
-</details>
-
-## What the plugin runs, sends and accesses
-
-- The plugin contains no executable code. It ships a skill, an agent, a Cursor rule and one MCP server entry.
-- The MCP server entry points your editor at `https://app.workweave.ai/public/mcp`. Requests go to Weave over HTTPS with an OAuth token issued to you when you sign in.
-- The tools read data from your Weave workspace. They don't change anything there.
-- You only see data your Weave role allows. Team members can only access data for teams they belong to.
-- Weave's [privacy policy](https://weaveos.com/privacy) and [security overview](https://weaveos.com/security) cover how Weave stores and handles your data.
-
-## Requirements
-
-- A [Weave](https://weaveos.com) account with connected data sources (GitHub, GitLab, Bitbucket, Linear, Jira and others)
-
-## Links
-
-- [Weave website](https://weaveos.com)
-- [Get started](https://app.workweave.ai)
-- Support: support@workweave.ai
-
-## License
-
-MIT
+Maintainers can use the [marketplace release guide](docs/marketplace-release.md). The package source is available under the MIT license. See [LICENSE](LICENSE).

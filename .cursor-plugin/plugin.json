@@ -1,7 +1,7 @@
 {
   "name": "weave",
   "version": "1.1.0",
-  "description": "Engineering analytics from Weave inside your editor. Ask about code output, PR cycle time, review turnaround, task delivery, AI coding adoption and agent activity, backed by your team's real data.",
+  "description": "Use a shared engineering analytics skill with Weave data in Cursor. Ask about code output, PR cycle time, reviews, task delivery, and AI tool adoption.",
   "author": {
     "name": "Weave",
     "email": "support@workweave.ai"
@@ -17,7 +17,6 @@
     "code-output",
     "pr-cycle-time",
     "code-review",
-    "ai-code-tracking",
     "engineering-management",
     "team-analytics",
     "mcp",
