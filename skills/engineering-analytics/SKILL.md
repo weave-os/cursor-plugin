@@ -1,21 +1,27 @@
 ---
 name: engineering-analytics
 description: >-
-  Analyze engineering metrics from a connected Weave workspace. Use for questions
-  about team code output, pull requests, review turnaround, task delivery, or
-  AI tool adoption and code attribution that need actual workspace data.
+  Use before any request involving Weave workspace data or tools, including
+  team and individual metrics, pull requests, reviews, tasks, AI adoption,
+  ambiguous entity names, and requests to post results elsewhere. Follow the
+  workspace, identity, filter, and read-only rules before calling Weave MCP.
 ---
 
 # Engineering analytics
 
 Use the connected Weave MCP server for read-only analysis. For general engineering advice, leave workspace data untouched.
 
-## Set the scope and dates
+## When to reply without tools
 
-- Check the client’s Weave connection and available tools. If Weave requires sign-in, ask the user to authorize or reconnect through the client’s OAuth flow for the intended organization. If the connector or a needed tool is unavailable, explain which data you cannot verify.
-- Resolve named teams, people, repositories and tags with `resolve_entities`. Use the returned IDs in the corresponding filters, such as `team_ids`, `account_ids` or `repository_ids`. If “my team” is unclear or a name matches multiple plausible teams, ask the user to choose before querying metrics. A directory match establishes identity only.
-- Stay within the requested scope and the signed-in user's Weave permissions. Prefer team aggregates for team questions and use individual metrics only when requested and permitted. Preserve anonymization and redactions. If access is denied, report the limitation and keep the requested scope in any follow-up queries.
-- Use `start_time` and `end_time` with inclusive dates for calendar periods and an IANA `timezone` when the user specifies one. If no period is given, use the trailing `last_month` preset and label it as such. It runs from the same date a month ago through today. Use matching windows and granularity when comparing trends.
+- **Request to post or send.** If asked to post, send, message Slack, or share results in another app, do not query analytics or invoke any tools. Explain that Weave Analytics cannot post and offer to draft in chat. Use only figures already present in the conversation. If none are present, ask which figures and period the user wants, or offer a blank template. Never invent plausible metric values, trends, comparisons, or sources.
+- **Request for a named workspace.** Treat “use the Example workspace,” “switch to Example,” “in Example Analytics,” and similar phrasing as a workspace request before extracting team names. A workspace or organization name is not a team name. Do not pass it to `resolve_entities`, list teams, or query metrics. Query only after the connection itself identifies that workspace as the one authorized by OAuth. A name in the request, a matching entity, or access to Weave tools does not identify the connected workspace. If its identity is unknown or different, explain that OAuth covers one workspace and ask the user to confirm or reconnect the intended one. End the turn without calling any tools.
+
+## Confirm scope before requesting metrics
+
+1. **Connection.** If a connection or required tool is unavailable, say which data you could not verify. Entity IDs cannot change the OAuth scope. Attribute results to a workspace by name only when the connection identifies it.
+2. **Entities.** For every named team, person, repository or tag, call `resolve_entities` first. Search for the entity name itself, for example `Platform` for “the Platform team.” Never search for a workspace or company name as a team. If multiple plausible matches come back, give the matching names and ask which one the user means. Wait for the answer before querying metrics. If nothing matches, ask for the exact name. Use individual metrics only when requested and permitted, and preserve redactions.
+3. **Filters.** Include every resolved ID in the corresponding filter on each metric or drill-down call, including when using `group_by`. For example, Platform's weekly adoption requires the resolved `team_ids` even though the result is grouped by week. If a call fails with the requested filters, report the limitation or use an equivalent query with the same scope.
+4. **Dates.** Use inclusive `start_time` and `end_time` for calendar periods. Set an IANA `timezone` only when specified and keep windows and granularity consistent for comparisons. With no requested period, use and label the trailing `last_month` preset, which runs from the same date a month ago through today.
 
 ## Choose a workflow
 
@@ -29,3 +35,5 @@ Use the connected Weave MCP server for read-only analysis. For general engineeri
 - If a metric, grouping, sort or filter is unsupported, use the available schema and error details to find an equivalent query that preserves the requested scope. Explain any gap if the requested breakdown remains unavailable.
 - Report empty or partial results as such. Treat zero as a result only when the tool returns a zero count or value. Include known integration, coverage or permission limits and state which results they affect.
 - Lead with the measured result, then give the metric, scope, dates and relevant units. Cite returned record or documentation links when available. For aggregate results without a link, identify the Weave metric and applied filters. Treat trends and outliers as observations and require evidence for explanations of cause.
+- Describe `code_output` as estimated engineering effort or code-output units. It is not a count of lines of code. Use `ai_code_loc` for recorded assistant-generated lines, and do not infer units the tool or documentation does not establish.
+- Include the first-commit-to-merge definition when reporting `pr_cycle_time`. For a specific returned pull request, include its supplied URL and label the number shown separately from the total number of matches when the query is limited.
