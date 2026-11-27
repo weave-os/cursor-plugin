@@ -1,0 +1,15 @@
+{
+  "name": "weave",
+  "owner": {
+    "name": "Weave",
+    "email": "support@workweave.ai"
+  },
+  "description": "Use the shared engineering analytics skill and Weave MCP tools in Claude Code.",
+  "plugins": [
+    {
+      "name": "weave",
+      "source": "./",
+      "description": "Analyze code output, PR cycle time, review turnaround, task delivery, and AI tool adoption from your Weave workspace."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "weave",
+  "version": "1.1.0",
+  "description": "Read-only engineering analytics from your Weave workspace.",
+  "author": {
+    "name": "Weave",
+    "email": "support@workweave.ai",
+    "url": "https://weaveos.com"
+  },
+  "homepage": "https://weaveos.com",
+  "repository": "https://github.com/weave-os/cursor-plugin",
+  "license": "MIT",
+  "keywords": [
+    "engineering-metrics",
+    "analytics",
+    "developer-productivity",
+    "code-output",
+    "pr-cycle-time",
+    "code-review",
+    "ai-adoption",
+    "team-analytics",
+    "mcp",
+    "weave"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Weave Analytics",
+        "shortDescription": "Engineering analytics",
+        "longDescription": "Ask about code output, pull request cycle time, reviews, task delivery, and AI coding activity in your Weave workspace. Weave provides read-only access to the data your account is allowed to see.",
+        "developerName": "Weave",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Analyze engineering metrics",
+          "Explore pull requests and reviews",
+          "Review AI coding activity"
+        ],
+        "websiteURL": "https://weaveos.com",
+        "supportURL": "https://docs.weaveos.com/integrations/mcp#how-do-i-troubleshoot-connection-issues",
+        "privacyPolicyURL": "https://weaveos.com/privacy",
+        "termsOfServiceURL": "https://weaveos.com/terms",
+        "defaultPrompt": [
+          "How is my team's code output and PR cycle time trending?",
+          "Which teams have the slowest median PR cycle time?",
+          "Show me AI code percentage over the last three months."
+        ],
+        "composerIcon": "./assets/logo.svg",
+        "logo": "./assets/logo.svg"
+      }
+    }
+  }
+}
