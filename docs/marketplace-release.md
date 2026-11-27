@@ -42,6 +42,8 @@ Before calling the package ready, confirm the MCP endpoint is reachable, the int
 
 The Cursor publishing form is separate from a team marketplace install. Fill the publisher form with the verified Weave publisher details, then retain a copy of the submitted values and resulting review status.
 
+Before starting a new submission, reconcile any existing official Cursor publisher application and its current review status.
+
 | Form field | Value to review |
 |---|---|
 | Organization name | Weave |
@@ -72,6 +74,8 @@ For Anthropic's public directory, follow its [submission instructions](https://c
 ## OpenAI and ChatGPT directory submission
 
 The root `plugin.json` and package scripts prepare a package for the OpenAI plugin flow. An authorized publisher completes the following steps in the developer portal.
+
+The public OpenAI directory is shared by Codex and ChatGPT. The submitting account must be a Weave OpenAI organization owner or have Apps Management Write permission.
 
 Complete and verify each gate in the OpenAI developer portal before submission:
 

@@ -25,6 +25,7 @@ Use the connected Weave MCP server for read-only analysis. For general engineeri
 
 ## Choose a workflow
 
+- **Request for a specific metric.** After the workspace and any named people or teams are resolved, query only the metric and breakdown the user requested. If they ask for a monthly total or a comparison of monthly totals, skip weekly trends, per-person rates and other metrics unless the user asks for them.
 - **Team or delivery snapshot.** Use `get_metric_overview` for aggregates and trends. For a team health question, start with a few relevant measures such as `code_output` (estimated engineering effort behind merged PRs), `prs` (merged PRs) and `pr_cycle_time` (median first commit to merge). For review turnaround, use `code_review_turnaround` and account for the organization’s tracking mode when interpreting the result. For task lead time, use `task_lead_time` (median in progress to completed).
 - **Cycle time comparison or investigation.** Compare teams with `get_metric_overview`, `metric_type=pr_cycle_time` and `group_by=team` under the same filters and dates. For “Which PRs took the longest?”, use `get_metric_drill_down` in that scope with `metric_type=pr_cycle_time`, `sort_by="Cycle time"` and `sort_direction=desc`. Use the returned PR links and distinguish rows shown from `total_count` when results are limited.
 - **AI tool adoption or code attribution.** For “What share of members used AI tools?”, use `ai_adoption_rate`, the share of eligible active members with recorded AI tool activity. Use `time_granularity=week` for a weekly trend and `group_by=ai_code_assistant` for per-tool adoption. Members can use more than one tool, so keep those shares separate. For “How many lines did assistants generate?”, use `ai_code_loc` for recorded assistant-generated LOC. For “What share of merged PR lines was attributed to AI?”, use `ai_code_percentage`, the AI share of AI-plus-human PR LOC with codegen excluded. Ask which measure the user means if “AI adoption” is used ambiguously.
@@ -32,6 +33,7 @@ Use the connected Weave MCP server for read-only analysis. For general engineeri
 
 ## Report what the data supports
 
+- Answer in chat by default. Create a canvas, chart file or export only when the user requests that deliverable. Use an inline table when it helps compare results.
 - If a metric, grouping, sort or filter is unsupported, use the available schema and error details to find an equivalent query that preserves the requested scope. Explain any gap if the requested breakdown remains unavailable.
 - Report empty or partial results as such. Treat zero as a result only when the tool returns a zero count or value. Include known integration, coverage or permission limits and state which results they affect.
 - Lead with the measured result, then give the metric, scope, dates and relevant units. Cite returned record or documentation links when available. For aggregate results without a link, identify the Weave metric and applied filters. Treat trends and outliers as observations and require evidence for explanations of cause.
